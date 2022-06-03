@@ -18,9 +18,13 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   /* BASE STYLE */
+  body {
+    background-color: #09090A;
+    color: #F4F4F5;
+  }
+
   body * {
     font: 400 1.6rem 'Inter', sans-serif;
-
     -webkit-font-smoothing: antialiased;
   }
 `;
