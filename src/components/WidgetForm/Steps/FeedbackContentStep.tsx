@@ -2,8 +2,10 @@ import { ArrowLeft } from 'phosphor-react';
 import { FormEvent, useState } from 'react';
 
 import { feedbackTypes, FeedbackType } from '..';
+import { api } from '../../../lib/api';
 
 import { CloseButton } from '../../CloseButton';
+import { LoadingSpinner } from '../../LoadingSpinner';
 import { ScreenshotButton } from '../ScreenshotButton';
 
 import { TypeOfFeedbackHeader, SendFeedback } from './styles';
@@ -14,39 +16,47 @@ interface FeedbackContentStepProps {
   onFeedbackSend: () => void;
 }
 
-export const FeedbackContentStep = ({ 
+export const FeedbackContentStep = ({
   feedbackType,
   onFeedbackRestartRequested,
   onFeedbackSend,
 }: FeedbackContentStepProps) => {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [feedbackComment, setFeedbackComment] = useState('');
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
 
   const feedbackTypeInfo = feedbackTypes[feedbackType];
 
-  function handleSubmitFeedback(event: FormEvent) {
+  async function handleSubmitFeedback(event: FormEvent) {
     event.preventDefault();
-    
-    console.log({
+
+    setIsSendingFeedback(true);
+
+    await api.post('/feedbacks', {
+      type: feedbackType,
+      comment: feedbackComment,
       screenshot,
-      feedbackComment,
     });
 
+    setIsSendingFeedback(false);
     onFeedbackSend();
   }
 
   return (
     <>
       <TypeOfFeedbackHeader>
-        <button 
+        <button
           type="button"
           className="back-btn"
           onClick={onFeedbackRestartRequested}
         >
-          <ArrowLeft weight="bold" className="arrow-icon"/>
+          <ArrowLeft weight="bold" className="arrow-icon" />
         </button>
         <span>
-          <img src={feedbackTypeInfo.image.source} alt={feedbackTypeInfo.image.alt} />
+          <img
+            src={feedbackTypeInfo.image.source}
+            alt={feedbackTypeInfo.image.alt}
+          />
           {feedbackTypeInfo.title}
         </span>
         <CloseButton />
@@ -57,19 +67,19 @@ export const FeedbackContentStep = ({
           <textarea
             placeholder="Algo não está funcionando bem? Queremos corrigir. Conte com detalhes o que está acontecendo..."
             onChange={event => setFeedbackComment(event.target.value)}
-          /> 
+          />
 
           <footer>
-            <ScreenshotButton 
+            <ScreenshotButton
               screenshot={screenshot}
               onCaptureScreenshot={setScreenshot}
             />
 
             <button
               type="submit"
-              disabled={feedbackComment === ''}
+              disabled={feedbackComment === '' || isSendingFeedback}
             >
-              Enviar feedback
+              {isSendingFeedback ? <LoadingSpinner /> : 'Enviar feedback'}
             </button>
           </footer>
         </form>
